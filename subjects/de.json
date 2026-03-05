@@ -1,0 +1,7 @@
+// de.json
+{
+  "math": "Mathematik",
+  "science": "Naturwissenschaften",
+  "history": "Geschichte",
+  "geography": "Geografie"
+}
