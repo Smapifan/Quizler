@@ -48,7 +48,7 @@ async function loadSubjects() {
 
   // Prüfe Hash beim Laden
   if(window.location.hash){
-    const hashQuizID = window.location.hash.substring(1); 
+    const hashQuizID = window.location.hash.substring(1);
     openQuizFromHash(hashQuizID);
   }
 }
@@ -67,22 +67,20 @@ async function openQuizFromHash(quizID){
   for(const file of quizFiles){
     const fileID = file.replace('.json','');
     if(fileID === quizID){
-      const quizData = await fetch(`Quiz/${file}`).then(r=>r.json());
-      showQuizzes(quizData.Type, quizID);
+      startQuiz(quizID, true);
       break;
     }
   }
 }
 
-// 3️⃣ Quizzes eines Subjects anzeigen (optional direkt Quiz öffnen)
-async function showQuizzes(subjectKey, openQuizID=null){
+// 3️⃣ Quizzes eines Subjects anzeigen
+async function showQuizzes(subjectKey){
   const quizContainerDiv = document.getElementById('quiz_container');
   quizContainerDiv.innerHTML = '';
   const quizListDiv = document.getElementById('quiz_list');
   quizListDiv.innerHTML = '<h2>Quizzes</h2>';
 
   const quizFiles = await fetch('Quiz/quiz_list.json').then(r=>r.json());
-
   for(const file of quizFiles){
     const quizID = file.replace('.json','');
     const quizData = await fetch(`Quiz/${file}`).then(r=>r.json());
@@ -95,20 +93,20 @@ async function showQuizzes(subjectKey, openQuizID=null){
       const div = document.createElement('div');
       div.className = 'quiz';
       div.textContent = i18nData[titleKey] || quizID;
-      div.onclick = ()=>startQuiz(quizID);
+      div.onclick = ()=>startQuiz(quizID, false);
       quizListDiv.appendChild(div);
-
-      if(openQuizID && quizID===openQuizID){
-        startQuiz(quizID);
-      }
     }
   }
   quizListDiv.scrollIntoView({behavior:'smooth'});
 }
 
 // 4️⃣ Quiz starten
-async function startQuiz(quizID){
-  window.location.hash = quizID; 
+async function startQuiz(quizID, onlyQuiz=false){
+  window.location.hash = quizID;
+  if(onlyQuiz){
+    document.getElementById('subjects_list').style.display = 'none';
+    document.getElementById('quiz_list').style.display = 'none';
+  }
   const quizDiv = document.getElementById('quiz_container');
   quizDiv.innerHTML = '';
 
@@ -166,7 +164,7 @@ async function startQuiz(quizID){
   quizDiv.appendChild(checkBtn);
 }
 
-// 5️⃣ Quiz auswerten
+// 5️⃣ Quiz auswerten + Read-Only
 function checkQuiz(quizData, answersMap, i18nData){
   quizData.Questions.forEach(q=>{
     const qDiv = document.getElementById(q.ID);
@@ -174,6 +172,7 @@ function checkQuiz(quizData, answersMap, i18nData){
       const input = label.querySelector('input');
       label.classList.remove('correct','wrong');
       if(!input) return;
+      input.disabled = true; // Read-only nach Prüfung
       if(q.Right_Answer === input.value){
         label.classList.add('correct');
       }
@@ -182,7 +181,7 @@ function checkQuiz(quizData, answersMap, i18nData){
       }
     });
   });
-  alert('Quiz checked! Correct answers are marked in green.');
+  alert('Quiz checked! Correct answers are marked in green. The quiz is now read-only.');
 }
 
 loadSubjects();
