@@ -1,0 +1,28 @@
+{
+  "Type": "math",
+  "Title": "i18n/{{Quiz_ID}}/title",
+  "Questions": [
+    {
+      "ID": "q1",
+      "Question": "i18n/{{Quiz_ID}}/q1_question",
+      "Answers": {
+        "a": "i18n/{{Quiz_ID}}/q1_a",
+        "b": "i18n/{{Quiz_ID}}/q1_b",
+        "c": "i18n/{{Quiz_ID}}/q1_c",
+        "d": "i18n/{{Quiz_ID}}/q1_d"
+      },
+      "Right_Answer": "a"
+    },
+    {
+      "ID": "q2",
+      "Question": "i18n/{{Quiz_ID}}/q2_question",
+      "Answers": {
+        "a": "i18n/{{Quiz_ID}}/q2_a",
+        "b": "i18n/{{Quiz_ID}}/q2_b",
+        "c": "i18n/{{Quiz_ID}}/q2_c",
+        "d": "i18n/{{Quiz_ID}}/q2_d"
+      },
+      "Right_Answer": "b"
+    }
+  ]
+}
