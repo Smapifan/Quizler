@@ -49,7 +49,7 @@ async function loadSubjects() {
   // Prüfe Hash beim Laden
   if(window.location.hash){
     const hashQuizID = window.location.hash.substring(1);
-    openQuizFromHash(hashQuizID);
+    startQuiz(hashQuizID, true);
   }
 }
 
@@ -61,19 +61,7 @@ document.getElementById('search').addEventListener('input', e=>{
   });
 });
 
-// 2️⃣ Quiz direkt über Hash öffnen
-async function openQuizFromHash(quizID){
-  const quizFiles = await fetch('Quiz/quiz_list.json').then(r=>r.json());
-  for(const file of quizFiles){
-    const fileID = file.replace('.json','');
-    if(fileID === quizID){
-      startQuiz(quizID, true);
-      break;
-    }
-  }
-}
-
-// 3️⃣ Quizzes eines Subjects anzeigen
+// 2️⃣ Quizzes eines Subjects anzeigen
 async function showQuizzes(subjectKey){
   const quizContainerDiv = document.getElementById('quiz_container');
   quizContainerDiv.innerHTML = '';
@@ -100,13 +88,14 @@ async function showQuizzes(subjectKey){
   quizListDiv.scrollIntoView({behavior:'smooth'});
 }
 
-// 4️⃣ Quiz starten
-async function startQuiz(quizID, onlyQuiz=false){
+// 3️⃣ Quiz starten
+async function startQuiz(quizID, fromHash=false){
   window.location.hash = quizID;
-  if(onlyQuiz){
-    document.getElementById('subjects_list').style.display = 'none';
-    document.getElementById('quiz_list').style.display = 'none';
-  }
+
+  // Alles außer Quiz ausblenden
+  document.getElementById('subjects_list').style.display = 'none';
+  document.getElementById('quiz_list').style.display = 'none';
+
   const quizDiv = document.getElementById('quiz_container');
   quizDiv.innerHTML = '';
 
@@ -164,15 +153,15 @@ async function startQuiz(quizID, onlyQuiz=false){
   quizDiv.appendChild(checkBtn);
 }
 
-// 5️⃣ Quiz auswerten + Read-Only
+// 4️⃣ Quiz auswerten + Read-Only
 function checkQuiz(quizData, answersMap, i18nData){
   quizData.Questions.forEach(q=>{
     const qDiv = document.getElementById(q.ID);
     Array.from(qDiv.querySelectorAll('.answer')).forEach(label=>{
       const input = label.querySelector('input');
-      label.classList.remove('correct','wrong');
       if(!input) return;
-      input.disabled = true; // Read-only nach Prüfung
+      input.disabled = true; // read-only
+      label.classList.remove('correct','wrong');
       if(q.Right_Answer === input.value){
         label.classList.add('correct');
       }
@@ -181,7 +170,7 @@ function checkQuiz(quizData, answersMap, i18nData){
       }
     });
   });
-  alert('Quiz checked! Correct answers are marked in green. The quiz is now read-only.');
+  alert('Quiz checked! The quiz is now read-only.');
 }
 
 loadSubjects();
