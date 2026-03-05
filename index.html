@@ -1,68 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Quiz Portal</title>
-<style>
-  body { font-family: Arial, sans-serif; padding: 20px; }
-  header { display: flex; justify-content: space-between; align-items: center; }
-  #search { padding: 5px; width: 200px; }
-  ul { list-style: none; padding: 0; }
-  li { margin: 10px 0; }
-  a { text-decoration: none; color: blue; }
-</style>
+  <meta charset="UTF-8">
+  <title>Quiz</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 800px; margin: auto; }
+    h1 { text-align: center; }
+    .question { margin: 20px 0; padding: 15px; border: 1px solid #ccc; border-radius: 8px; }
+    .answers { margin-top: 10px; }
+    .answer { margin: 5px 0; cursor: pointer; padding: 5px 10px; border-radius: 5px; }
+    .answer:hover { background-color: #f0f0f0; }
+    .correct { background-color: #d4edda; }
+    .wrong { background-color: #f8d7da; }
+  </style>
 </head>
 <body>
 
-<header>
-  <h1 id="title">Quiz Portal</h1>
-  <input type="text" id="search" placeholder="Search...">
-</header>
-
-<ul id="subjects_list"></ul>
+<h1 id="quiz_title">Quiz Title</h1>
+<div id="questions_container"></div>
 
 <script>
-const userLang = navigator.language.slice(0,2) || 'en'; // System-Sprache
-let subjectsData = {};
-let i18nSubjects = {};
+  const userLang = navigator.language.slice(0,2) || 'en';
+  const urlParams = new URLSearchParams(window.location.search);
+  const quizID = window.location.pathname.split('/').pop().split('.').shift(); // Quiz_ID aus Pfad
+  let quizData = {};
+  let i18nData = {};
 
-// Lade subjects.json
-fetch('subjects.json')
-  .then(res => res.json())
-  .then(data => {
-    subjectsData = data;
-    return fetch(`i18n/subjects/${userLang}.json`);
-  })
-  .then(res => res.json())
-  .then(i18nData => {
-    i18nSubjects = i18nData;
-    renderSubjects();
-  });
+  async function loadQuiz() {
+    // Lade Quiz-Struktur
+    quizData = await fetch(`Quiz/${quizID}.json`).then(r => r.json());
+    // Lade i18n-Texte
+    try {
+      i18nData = await fetch(`i18n/${quizID}/${userLang}.json`).then(r => r.json());
+    } catch(e) {
+      i18nData = await fetch(`i18n/${quizID}/en.json`).then(r => r.json());
+    }
 
-// Rendern der Subjects
-function renderSubjects() {
-  const ul = document.getElementById('subjects_list');
-  ul.innerHTML = '';
-  Object.keys(subjectsData).forEach(key => {
-    const li = document.createElement('li');
-    const link = document.createElement('a');
-    link.href = subjectsData[key] + '#';
-    link.textContent = i18nSubjects[key] || key;
-    li.appendChild(link);
-    ul.appendChild(li);
-  });
-}
+    // Setze Titel
+    const titleKey = quizData.Title.split('/').pop();
+    document.getElementById('quiz_title').textContent = i18nData[titleKey] || quizData.Title;
 
-// Suche
-document.getElementById('search').addEventListener('input', (e) => {
-  const query = e.target.value.toLowerCase();
-  const ul = document.getElementById('subjects_list');
-  [...ul.children].forEach(li => {
-    li.style.display = li.textContent.toLowerCase().includes(query) ? '' : 'none';
-  });
-});
+    renderQuestions();
+  }
+
+  function renderQuestions() {
+    const container = document.getElementById('questions_container');
+    container.innerHTML = '';
+
+    quizData.Questions.forEach(q => {
+      const qDiv = document.createElement('div');
+      qDiv.className = 'question';
+      qDiv.id = q.ID;
+
+      const qTextKey = q.Question.split('/').pop();
+      const qText = i18nData[qTextKey] || q.Question;
+      const qHeader = document.createElement('h3');
+      qHeader.textContent = qText;
+      qDiv.appendChild(qHeader);
+
+      const answersDiv = document.createElement('div');
+      answersDiv.className = 'answers';
+
+      Object.entries(q.Answers).forEach(([key, val]) => {
+        const answerKey = val.split('/').pop();
+        const answerText = i18nData[answerKey] || val;
+
+        const btn = document.createElement('div');
+        btn.className = 'answer';
+        btn.textContent = answerText;
+        btn.onclick = () => checkAnswer(btn, key, q.Right_Answer);
+        answersDiv.appendChild(btn);
+      });
+
+      qDiv.appendChild(answersDiv);
+      container.appendChild(qDiv);
+    });
+
+    // Prüfe, ob URL einen Hash hat (#Question_ID)
+    if(window.location.hash) {
+      const target = document.querySelector(window.location.hash);
+      if(target) target.scrollIntoView({behavior: 'smooth'});
+    }
+  }
+
+  function checkAnswer(btn, answerKey, correctKey) {
+    const parent = btn.parentNode;
+    Array.from(parent.children).forEach(a => a.classList.remove('correct', 'wrong'));
+    if(answerKey === correctKey) {
+      btn.classList.add('correct');
+    } else {
+      btn.classList.add('wrong');
+    }
+  }
+
+  loadQuiz();
 </script>
-
 </body>
 </html>
