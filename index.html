@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quiz Portal</title>
+<style>
+  body { font-family: Arial, sans-serif; padding: 20px; }
+  header { display: flex; justify-content: space-between; align-items: center; }
+  #search { padding: 5px; width: 200px; }
+  ul { list-style: none; padding: 0; }
+  li { margin: 10px 0; }
+  a { text-decoration: none; color: blue; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1 id="title">Quiz Portal</h1>
+  <input type="text" id="search" placeholder="Search...">
+</header>
+
+<ul id="subjects_list"></ul>
+
+<script>
+const userLang = navigator.language.slice(0,2) || 'en'; // System-Sprache
+let subjectsData = {};
+let i18nSubjects = {};
+
+// Lade subjects.json
+fetch('subjects.json')
+  .then(res => res.json())
+  .then(data => {
+    subjectsData = data;
+    return fetch(`i18n/subjects/${userLang}.json`);
+  })
+  .then(res => res.json())
+  .then(i18nData => {
+    i18nSubjects = i18nData;
+    renderSubjects();
+  });
+
+// Rendern der Subjects
+function renderSubjects() {
+  const ul = document.getElementById('subjects_list');
+  ul.innerHTML = '';
+  Object.keys(subjectsData).forEach(key => {
+    const li = document.createElement('li');
+    const link = document.createElement('a');
+    link.href = subjectsData[key] + '#';
+    link.textContent = i18nSubjects[key] || key;
+    li.appendChild(link);
+    ul.appendChild(li);
+  });
+}
+
+// Suche
+document.getElementById('search').addEventListener('input', (e) => {
+  const query = e.target.value.toLowerCase();
+  const ul = document.getElementById('subjects_list');
+  [...ul.children].forEach(li => {
+    li.style.display = li.textContent.toLowerCase().includes(query) ? '' : 'none';
+  });
+});
+</script>
+
+</body>
+</html>
