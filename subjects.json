@@ -1,5 +1,4 @@
 {
   "math": "i18n/subjects/math",
-  "science": "i18n/subjects/science",
-  "history": "i18n/subjects/history"
+  "science": "i18n/subjects/science"
 }
