@@ -1,0 +1,6 @@
+{
+  "math": "Quiz/math",
+  "science": "Quiz/science",
+  "history": "Quiz/history",
+  "geography": "Quiz/geography"
+}
